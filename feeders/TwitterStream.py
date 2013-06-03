@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
     
-import sys, time, pycurl, urllib, json, oauth2 as oauth
+import sys, time, pycurl, urllib, json, oauth2 as oauth, re
 from ConfigParser import SafeConfigParser
 
 config = SafeConfigParser()
@@ -127,18 +127,27 @@ class TwitterStream:
             elif message.get('warning'):
                 print 'Got warning: %s' % message['warning'].get('message')
             else:
-               	print 'User: %s' % message['user'].get('screen_name')
-		print 'User ID: %s' % message['user'].get('id_str')
-		print 'Got tweet with text: %s' % message.get('text')
-		print 'Tweet ID: %s' % message.get('id')
-		for mention in message['entities']['user_mentions']:
-			print 'Mentioned: %s' %mention.get('screen_name')
-			print 'Mentioned ID: %s' % mention.get('id_str')
-		for hashtag in message['entities']['hashtags']:
-			print 'Hashtag: %s' % hashtag.get('text')
-		for url in message['entities']['urls']:
-			print 'URL: %s' % url.get('expanded_url')
-		print 'Timestamp: %s' % message.get('created_at')
+            	keywords = config.get('twitter','keywords')
+		r_keywords = keywords.split(",")
+		r_pattern = '(^|)'
+		for word in r_keywords:
+			r_pattern += '(' + word + ')|'
+		r_pattern += ' ( |$)'
+		matches = re.search(r_pattern,message.get('text'), re.I|re.M)
+		if matches:
+			print 'Matched: %s' % matches.group() 
+			print 'User: %s' % message['user'].get('screen_name')
+			print 'User ID: %s' % message['user'].get('id_str')
+			print 'Got tweet with text: %s' % message.get('text')
+			print 'Tweet ID: %s' % message.get('id')
+			for mention in message['entities']['user_mentions']:
+				print 'Mentioned: %s' %mention.get('screen_name')
+				print 'Mentioned ID: %s' % mention.get('id_str')
+			for hashtag in message['entities']['hashtags']:
+				print 'Hashtag: %s' % hashtag.get('text')
+			for url in message['entities']['urls']:
+				print 'URL: %s' % url.get('expanded_url')
+			print 'Timestamp: %s' % message.get('created_at')
 			 
 if __name__ == '__main__':
     ts = TwitterStream()
