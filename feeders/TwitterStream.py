@@ -38,7 +38,7 @@ POST_PARAMS = {'include_entities': 0,
                'track': config.get('twitter','keywords')}
 
 class TwitterStream:
-    def __init__(self, timeout=False):
+    def __init__(self, timeout=120):
         self.oauth_token = oauth.Token(key=OAUTH_KEYS['access_token_key'], secret=OAUTH_KEYS['access_token_secret'])
         self.oauth_consumer = oauth.Consumer(key=OAUTH_KEYS['consumer_key'], secret=OAUTH_KEYS['consumer_secret'])
         self.conn = None
@@ -138,6 +138,7 @@ class TwitterStream:
 			print 'Hashtag: %s' % hashtag.get('text')
 		for url in message['entities']['urls']:
 			print 'URL: %s' % url.get('expanded_url')
+		print 'Timestamp: %s' % message.get('created_at')
 			 
 if __name__ == '__main__':
     ts = TwitterStream()
