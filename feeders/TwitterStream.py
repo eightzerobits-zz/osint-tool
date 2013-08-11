@@ -88,8 +88,8 @@ class TwitterStream:
         backoff_rate_limit = 60
         while True:
             self.setup_connection()
-            try:
-                self.conn.perform()
+	    try:
+		self.conn.perform()
             except:
                 # Network error, use linear back off up to 16 seconds
                 print 'Network error: %s' % self.conn.errstr()
@@ -152,4 +152,5 @@ class TwitterStream:
 if __name__ == '__main__':
     ts = TwitterStream()
     ts.setup_connection()
+    b = 0
     ts.start()
