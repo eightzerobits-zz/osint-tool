@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2013 Bryan Brannigan
-# Derived from Gustav Arngården 
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,17 +16,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
     
-import sys, time, tweepy
+import json, re
 from ConfigParser import SafeConfigParser
+from twython import Twython
 
 config = SafeConfigParser()
 config.read('../config/config.ini')
 
-auth = tweepy.OAuthHandler(config.get('twitter','consumer_key'),config.get('twitter','consumer_secret'))
-auth.set_access_token(config.get('twitter','access_token_key'),config.get('twitter','access_token_secret'))
+twitter = Twython(config.get('twitter','consumer_key'), config.get('twitter','consumer_secret'), config.get('twitter','access_token_key'), config.get('twitter','access_token_secret'))
 
-api = tweepy.API(auth)
-results = api.search(q='ipad',page=1,rpp=100,since=340106128568508416)
+search = twitter.search(q='bryanbrannigan',until='2013-11-30')
 
-for result in results:
-	print result.id
+for message in search['statuses']:
+	print message.get('text')
+
+print twitter.get_lastfunction_header('x-rate-limit-remaining')
