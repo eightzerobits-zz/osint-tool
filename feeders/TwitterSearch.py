@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
     
 import json, re
+import ConfigParser
 from ConfigParser import SafeConfigParser
 from twython import Twython
 
@@ -28,8 +29,15 @@ search_terms_list = search_terms.split(',')
 
 twitter = Twython(config.get('twitter','consumer_key'), config.get('twitter','consumer_secret'), config.get('twitter','access_token_key'), config.get('twitter','access_token_secret'))
 
+tweet_history = open("newest-tweet.lock","r")
+newest_tweet = tweet_history.readline()
+tweet_history.close()
+newest_tweet = int(newest_tweet)
+
+lookup_user = ''
+
 for term in search_terms_list:
-	search = twitter.search(q=term)
+	search = twitter.search(q=term,since_id=newest_tweet,count=100)
 
 	for message in search['statuses']:
 		keywords = config.get('twitter','keywords')
@@ -53,5 +61,32 @@ for term in search_terms_list:
                         for url in message['entities']['urls']:
                                 print 'URL: %s' % url.get('expanded_url')
                         print 'Timestamp: %s' % message.get('created_at')
+			print 'Coordinates: %s' % message.get('coordinates')
+			print 'Retweeted: %s' % message.get('retweeted')
+			print 'Retweet Count: %s' % message.get('retweet_count')
+
+			lookup_user += message['user'].get('id_str') + ","
+
+		if int(message.get('id')) > newest_tweet:
+			newest_tweet = message.get('id')
 
 	print twitter.get_lastfunction_header('x-rate-limit-remaining')
+
+if lookup_user:
+	lookup_user = twitter.lookup_user(user_id=lookup_user)
+	for user in lookup_user:
+		print 'User: %s' % user.get('id_str')
+		print 'Name: %s' % user.get('name')
+		print 'Screen Name: %s' % user.get('screen_name')
+		print 'Profile Image: %s' % user.get('profile_image_url')
+		print 'User Location: %s' % user.get('location')
+		print 'Created: %s' % user.get('created_at')
+		print 'URL: %s' % user.get('url')
+		print 'Follower Count: %s' % user.get('followers_count')
+		print 'Description: %s' % user.get('description')
+		print 'Verified: %s' % user.get('verified')
+
+tweet_history = open("newest-tweet.lock","w")
+tweet_history.write(str(newest_tweet))
+tweet_history.close()
+
